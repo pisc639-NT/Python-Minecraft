@@ -10,6 +10,7 @@ from fuzzywuzzy import process
 import PIL
 import utils
 import time
+import colorsys
 
 def get_size():
     # return np.dtype(np.array(list(os.get_terminal_size())) * 0.9, int)
@@ -20,12 +21,18 @@ def first_element(l, default=None, depth=1):
         l = l[0] if len(l) > 0 else default
     return l
 
+def maximize_color(color):
+    color = list(colorsys.rgb_to_hsv(color[0]/255, color[1]/255, color[2]/255))
+    color[2] = 1
+    return tuple(int(i*255) for i in colorsys.hsv_to_rgb(*color))
+
+
 def ascii(image, set_size:tuple[int, int]):
     width, height = image.size
     # set minimum size
     new_width, new_height = set_size
     new_height = int(min(new_height, new_width / width * height))
-    # end set minimum size
+    
     ratio = height/width/2
     new_width = int(new_height/ratio)    
     color_data = np.array(image.resize((new_width, new_height)).convert("RGB")).reshape(-1, 3)
@@ -33,14 +40,17 @@ def ascii(image, set_size:tuple[int, int]):
     resized_image = image.resize((new_width, new_height))
     gray_image = resized_image.convert("L")
     # ascii_chars = ["@", "#", "S", "%","?", "*", "+", ";", ":", ",", "."]
-    ascii_chars = str((r""" `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"""))
+    ascii_chars = str((r""" `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"""))
+    # ascii_chars = str((r"""░▒▓█"""))
     pixel_data = gray_image.getdata()
     # get = pixel_data[0]
     # print(get, dir(get))
     div = int(280 / len(ascii_chars))
     # print(f"{ascii_chars}")
-    # string = np.array([utils.color_text(ascii_chars[pixel_data[i]//div], color=color_data[i]) for i in range(len(pixel_data))])
+    # stmbols
+    # string = np.array([utils.color_text(ascii_chars[pixel_data[i]//div], color=maximize_color(color_data[i])) for i in range(len(pixel_data))])
     string = np.array([utils.color_text("█", color=color_data[i]) for i in range(len(pixel_data))])
+
     string = string.reshape(new_height, new_width)
     # ascii_string = "\n".join([string[i:(i+new_width)] for i in range(0, length, new_width)])
     ascii_string = "\n".join(["".join([str(j) for j in i]) for i in string])
@@ -102,6 +112,6 @@ def save_print_win(window_name:str, fpath):
 
 if __name__ == '__main__':
     while True:
-        save_print_win('Tlauncher', 'out.png')
+        save_print_win('Minecra', 'out.png')
         # exit()
         time.sleep(0.5)
